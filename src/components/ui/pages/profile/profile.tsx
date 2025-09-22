@@ -11,6 +11,7 @@ export const ProfileUI: FC<ProfileUIProps> = ({
   formValue,
   isFormChanged,
   updateUserError,
+  showSuccess,
   handleSubmit,
   handleCancel,
   handleInputChange
@@ -77,6 +78,14 @@ export const ProfileUI: FC<ProfileUIProps> = ({
               Сохранить
             </Button>
           </div>
+        )}
+        {showSuccess && (
+          <p
+            className={`${commonStyles.success} pt-5 text text_type_main-default`}
+            style={{ color: '#00CCCC' }}
+          >
+            Данные успешно обновлены!
+          </p>
         )}
         {updateUserError && (
           <p

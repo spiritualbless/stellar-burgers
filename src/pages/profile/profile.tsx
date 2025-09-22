@@ -1,26 +1,43 @@
 import { ProfileUI } from '@ui-pages';
 import { FC, SyntheticEvent, useEffect, useState } from 'react';
+import { useSelector, useAppDispatch } from '../../services/store';
+import { selectUser, selectAuthLoading, selectAuthError } from '../../services/selectors';
+import { updateUser, clearError } from '../../services/slices/authSlice';
 
 export const Profile: FC = () => {
-  /** TODO: взять переменную из стора */
-  const user = {
-    name: '',
-    email: ''
-  };
+  const user = useSelector(selectUser);
+  const loading = useSelector(selectAuthLoading);
+  const error = useSelector(selectAuthError);
+  const dispatch = useAppDispatch();
 
   const [formValue, setFormValue] = useState({
-    name: user.name,
-    email: user.email,
+    name: '',
+    email: '',
     password: ''
   });
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
-    setFormValue((prevState) => ({
-      ...prevState,
-      name: user?.name || '',
-      email: user?.email || ''
-    }));
+    if (user) {
+      setFormValue((prevState) => ({
+        ...prevState,
+        name: user.name || '',
+        email: user.email || ''
+      }));
+    }
   }, [user]);
+
+  // Показываем успешное обновление и очищаем пароль после успешного обновления
+  useEffect(() => {
+    if (user && !loading && !error && showSuccess) {
+      setFormValue((prevState) => ({
+        ...prevState,
+        password: ''
+      }));
+      const timer = setTimeout(() => setShowSuccess(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [user, loading, error, showSuccess]);
 
   const isFormChanged =
     formValue.name !== user?.name ||
@@ -29,18 +46,37 @@ export const Profile: FC = () => {
 
   const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();
+    dispatch(clearError());
+    
+    const updateData: any = {
+      name: formValue.name,
+      email: formValue.email
+    };
+    if (formValue.password) {
+      updateData.password = formValue.password;
+    }
+    
+    dispatch(updateUser(updateData)).then((result) => {
+      if (updateUser.fulfilled.match(result)) {
+        setShowSuccess(true);
+      }
+    });
   };
 
   const handleCancel = (e: SyntheticEvent) => {
     e.preventDefault();
+    dispatch(clearError());
     setFormValue({
-      name: user.name,
-      email: user.email,
+      name: user?.name || '',
+      email: user?.email || '',
       password: ''
     });
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (error) {
+      dispatch(clearError());
+    }
     setFormValue((prevState) => ({
       ...prevState,
       [e.target.name]: e.target.value
@@ -54,8 +90,8 @@ export const Profile: FC = () => {
       handleCancel={handleCancel}
       handleSubmit={handleSubmit}
       handleInputChange={handleInputChange}
+      updateUserError={error || undefined}
+      showSuccess={showSuccess}
     />
   );
-
-  return null;
 };
