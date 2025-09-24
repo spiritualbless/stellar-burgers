@@ -15,36 +15,30 @@ const constructorSlice = createSlice({
   initialState,
   reducers: {
     addBun: (state, action: PayloadAction<any>) => {
-      state.bun = action.payload;
-      return state;
+      return { ...state, bun: action.payload };
     },
     addIngredient: (state, action: PayloadAction<any>) => {
-      if (!state.ingredients) {
-        state.ingredients = [];
-      }
-      state.ingredients.push(action.payload);
-      return state;
+      const nextIngredients = (state.ingredients || []).concat(action.payload);
+      return { ...state, ingredients: nextIngredients };
     },
     removeIngredient: (state, action: PayloadAction<string>) => {
-      state.ingredients = state.ingredients.filter(
+      const nextIngredients = (state.ingredients || []).filter(
         (ingredient) => ingredient.id !== action.payload
       );
-      return state;
+      return { ...state, ingredients: nextIngredients };
     },
     moveIngredient: (
       state,
       action: PayloadAction<{ dragIndex: number; hoverIndex: number }>
     ) => {
       const { dragIndex, hoverIndex } = action.payload;
-      const draggedIngredient = state.ingredients[dragIndex];
-      state.ingredients.splice(dragIndex, 1);
-      state.ingredients.splice(hoverIndex, 0, draggedIngredient);
-      return state;
+      const next = (state.ingredients || []).slice();
+      const [dragged] = next.splice(dragIndex, 1);
+      next.splice(hoverIndex, 0, dragged);
+      return { ...state, ingredients: next };
     },
-    clearConstructor: (state) => {
-      state.bun = null;
-      state.ingredients = [];
-      return state;
+    clearConstructor: () => {
+      return { bun: null, ingredients: [] };
     },
   },
 });

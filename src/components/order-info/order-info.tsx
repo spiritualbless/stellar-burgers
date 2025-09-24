@@ -1,9 +1,9 @@
-import { FC, useMemo } from 'react';
-import { useSelector } from '../../services/store';
+import { FC, useMemo, useEffect } from 'react';
+import { useSelector, useDispatch } from '../../services/store';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient, TOrder } from '../../utils/types';
-import { selectIngredients, selectCurrentOrder } from '../../services/selectors';
+import { selectIngredients, selectCurrentOrder, selectOrderLoading, selectOrderError } from '../../services/selectors';
 
 interface OrderInfoProps {
   order?: TOrder;
@@ -12,6 +12,8 @@ interface OrderInfoProps {
 export const OrderInfo: FC<OrderInfoProps> = ({ order }) => {
   const orderData = useSelector(selectCurrentOrder) || order;
   const ingredients = useSelector(selectIngredients);
+  const orderLoading = useSelector(selectOrderLoading);
+  const orderError = useSelector(selectOrderError);
 
   /* Готовим данные для отображения */
   const orderInfo = useMemo(() => {
@@ -55,8 +57,13 @@ export const OrderInfo: FC<OrderInfoProps> = ({ order }) => {
     };
   }, [orderData, ingredients]);
 
-  if (!orderInfo) {
+  if (orderLoading || (!orderInfo && (!ingredients || ingredients.length === 0))) {
     return <Preloader />;
+  }
+
+  if (!orderInfo) {
+    // Only show error text if we truly have no data
+    return <div className="text text_type_main-default p-6">{orderError ? 'Ошибка загрузки заказа' : 'Заказ не найден'}</div>;
   }
 
   return <OrderInfoUI orderInfo={orderInfo} />;

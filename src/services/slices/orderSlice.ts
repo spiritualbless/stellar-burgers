@@ -20,9 +20,8 @@ const initialState: OrderState = {
 export const createOrder = createAsyncThunk(
   'order/createOrder',
   async (ingredients: string[], { dispatch }) => {
-    console.log('createOrder: starting with ingredients:', ingredients);
     const data = await orderBurgerApi(ingredients);
-    console.log('createOrder: received data:', data);
+
     dispatch(clearConstructor());
     return data;
   }

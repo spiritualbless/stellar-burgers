@@ -15,6 +15,7 @@ import { ModalRoutes } from '../modal-routes';
 import { AppHeader } from '@components';
 import { selectIsAuthenticated } from '../../services/selectors';
 import { getUser } from '../../services/slices/authSlice';
+import { fetchIngredients } from '../../services/slices/ingredientsSlice';
 import '../../index.css';
 import styles from './app.module.css';
 
@@ -25,6 +26,10 @@ const App = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
   const background = location.state?.background;
+
+  useEffect(() => {
+    dispatch(fetchIngredients());
+  }, [dispatch]);
 
   useEffect(() => {
     if (isAuthenticated) {

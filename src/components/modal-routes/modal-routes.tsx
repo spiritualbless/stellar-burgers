@@ -5,7 +5,7 @@ import { Modal } from '../modal';
 import { IngredientDetails } from '../ingredient-details';
 import { OrderInfo } from '../order-info';
 import { ProtectedRoute } from '../protected-route';
-import { getOrderByNumber } from '../../services/slices/orderSlice';
+import { getOrderByNumber, clearOrder } from '../../services/slices/orderSlice';
 
 export const ModalRoutes = () => {
   const location = useLocation();
@@ -16,6 +16,8 @@ export const ModalRoutes = () => {
   const background = location.state?.background;
 
   const handleCloseModal = () => {
+    // Clear any viewed order to avoid leaking into other screens
+    dispatch(clearOrder());
     navigate(-1);
   };
 
@@ -42,6 +44,10 @@ export const ModalRoutes = () => {
       if (number) {
         dispatch(getOrderByNumber(parseInt(number)));
       }
+      return () => {
+        // Cleanup viewed order on unmount
+        dispatch(clearOrder());
+      };
     }, [dispatch, number]);
 
     return handleOrderModal();

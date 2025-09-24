@@ -13,6 +13,10 @@
     0px 16px 24px rgba(0, 0, 0, 0.04),
     0px 4px 8px rgba(0, 0, 0, 0.04),
     0px 0px 1px rgba(0, 0, 0, 0.04);
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
@@ -41,4 +45,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
 }

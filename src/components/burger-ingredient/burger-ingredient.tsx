@@ -29,9 +29,8 @@ export const BurgerIngredient: FC<TBurgerIngredientProps> = memo(
       console.log('BurgerIngredient: handleAdd called with ingredient:', ingredient);
       try {
         if (ingredient.type === 'bun') {
-          const bunData = { ...ingredient, id: `${ingredient._id}-${Date.now()}` };
-          console.log('BurgerIngredient: dispatching addBun with:', bunData);
-          dispatch(addBun(bunData));
+          // Store bun as-is; replacement handled in reducer
+          dispatch(addBun(ingredient));
         } else {
           const ingredientData = { ...ingredient, id: `${ingredient._id}-${Date.now()}` };
           console.log('BurgerIngredient: dispatching addIngredient with:', ingredientData);

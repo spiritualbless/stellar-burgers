@@ -12,11 +12,11 @@ export const selectIngredientsLoading = (state: RootState) => state.ingredients.
 export const selectIngredientsError = (state: RootState) => state.ingredients.error;
 
 // Constructor selectors
-export const selectConstructorBun = (state: RootState) => state.constructor.bun;
-export const selectConstructorIngredients = (state: RootState) => state.constructor.ingredients;
+export const selectConstructorBun = (state: RootState) => state.burgerConstructor.bun;
+export const selectConstructorIngredients = (state: RootState) => state.burgerConstructor.ingredients;
 export const selectConstructorTotal = (state: RootState) => {
-  const bun = state.constructor.bun;
-  const ingredients = state.constructor.ingredients || [];
+  const bun = state.burgerConstructor.bun;
+  const ingredients = state.burgerConstructor.ingredients || [];
   
   const bunPrice = bun ? bun.price * 2 : 0;
   const ingredientsPrice = ingredients.reduce((sum: number, ingredient: any) => sum + ingredient.price, 0);

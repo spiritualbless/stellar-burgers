@@ -7,7 +7,7 @@ import {
   selectConstructorIngredients, 
   selectConstructorTotal,
   selectOrderLoading,
-  selectCurrentOrder,
+  selectOrderNumber,
   selectIsAuthenticated
 } from '../../services/selectors';
 import { createOrder, clearOrder } from '../../services/slices/orderSlice';
@@ -17,7 +17,7 @@ export const BurgerConstructor: FC = () => {
   const ingredients = useAppSelector(selectConstructorIngredients);
   const price = useAppSelector(selectConstructorTotal);
   const orderRequest = useAppSelector(selectOrderLoading);
-  const orderModalData = useAppSelector(selectCurrentOrder);
+  const orderNumber = useAppSelector(selectOrderNumber);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   
   console.log('BurgerConstructor: bun =', bun);
@@ -58,7 +58,7 @@ export const BurgerConstructor: FC = () => {
       price={price}
       orderRequest={orderRequest}
       constructorItems={constructorItems}
-      orderModalData={orderModalData}
+      orderNumber={orderNumber}
       onOrderClick={onOrderClick}
       closeOrderModal={closeOrderModal}
     />
