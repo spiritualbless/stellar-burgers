@@ -1,5 +1,5 @@
-import { FC, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { FC, useMemo, useEffect, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../services/store';
 import { BurgerConstructorUI } from '@ui';
 import { 
@@ -26,6 +26,8 @@ export const BurgerConstructor: FC = () => {
   
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const autoSubmitGuardRef = useRef(false);
 
   const constructorItems = {
     bun,
@@ -36,7 +38,7 @@ export const BurgerConstructor: FC = () => {
     if (!bun || orderRequest) return;
     
     if (!isAuthenticated) {
-      navigate('/login', { state: { from: '/' } });
+      navigate('/login', { state: { from: '/', intent: 'placeOrder' } });
       return;
     }
 
@@ -48,6 +50,28 @@ export const BurgerConstructor: FC = () => {
     
     dispatch(createOrder(ingredientsIds));
   };
+
+  useEffect(() => {
+    // After successful login redirect back to '/', auto-submit the order once
+    const shouldPlaceOrder = (location.state as any)?.intent === 'placeOrder';
+    if (
+      shouldPlaceOrder &&
+      isAuthenticated &&
+      bun &&
+      !orderRequest &&
+      !autoSubmitGuardRef.current
+    ) {
+      autoSubmitGuardRef.current = true;
+      const ingredientsIds = [
+        bun._id,
+        ...(ingredients || []).map((ingredient: any) => ingredient._id),
+        bun._id
+      ];
+      dispatch(createOrder(ingredientsIds));
+      // Clear state to prevent re-trigger on re-renders
+      navigate('/', { replace: true });
+    }
+  }, [location.state, isAuthenticated, bun, orderRequest, ingredients, dispatch, navigate]);
 
   const closeOrderModal = () => {
     dispatch(clearOrder());

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Routes, Route, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from '../../services/store';
 import { Modal } from '../modal';
@@ -39,16 +39,24 @@ export const ModalRoutes = () => {
 
   const OrderModalWithData = () => {
     const { number } = useParams<{ number: string }>();
+    const lastRequestedNumberRef = useRef<number | null>(null);
     
     useEffect(() => {
       if (number) {
-        dispatch(getOrderByNumber(parseInt(number)));
+        // Avoid duplicate fetching if current order is already the requested one
+        const currentNumber = currentOrder?.number;
+        const targetNumber = parseInt(number);
+        const alreadyRequested = lastRequestedNumberRef.current === targetNumber;
+        if (currentNumber !== targetNumber && !alreadyRequested) {
+          lastRequestedNumberRef.current = targetNumber;
+          dispatch(getOrderByNumber(targetNumber));
+        }
       }
       return () => {
         // Cleanup viewed order on unmount
         dispatch(clearOrder());
       };
-    }, [dispatch, number]);
+    }, [dispatch, number, currentOrder?.number]);
 
     return handleOrderModal();
   };

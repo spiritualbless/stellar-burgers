@@ -17,6 +17,7 @@ export const Login: FC = () => {
   const user = useSelector(selectUser);
 
   const from = location.state?.from || '/';
+  const intent = location.state?.intent;
 
   const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();
@@ -25,9 +26,10 @@ export const Login: FC = () => {
 
   useEffect(() => {
     if (!loading && !error && user) {
-      navigate(from, { replace: true });
+      // Preserve intent if present so constructor can auto-submit order
+      navigate(from, { replace: true, state: intent ? { intent } : undefined });
     }
-  }, [loading, error, navigate, from]);
+  }, [loading, error, navigate, from, user, intent]);
 
   return (
     <LoginUI
