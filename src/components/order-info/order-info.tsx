@@ -2,8 +2,10 @@ import { FC, useMemo, useEffect } from 'react';
 import { useSelector, useDispatch } from '../../services/store';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
+import { ErrorMessage } from '../ui/error-message';
 import { TIngredient, TOrder } from '../../utils/types';
 import { selectIngredients, selectCurrentOrder, selectOrderLoading, selectOrderError } from '../../services/selectors';
+import { getOrderByNumber } from '../../services/slices/orderSlice';
 
 interface OrderInfoProps {
   order?: TOrder;
@@ -14,6 +16,13 @@ export const OrderInfo: FC<OrderInfoProps> = ({ order }) => {
   const ingredients = useSelector(selectIngredients);
   const orderLoading = useSelector(selectOrderLoading);
   const orderError = useSelector(selectOrderError);
+  const dispatch = useDispatch();
+
+  const handleRetry = () => {
+    if (orderData?.number) {
+      dispatch(getOrderByNumber(orderData.number));
+    }
+  };
 
   /* Готовим данные для отображения */
   const orderInfo = useMemo(() => {
@@ -57,13 +66,28 @@ export const OrderInfo: FC<OrderInfoProps> = ({ order }) => {
     };
   }, [orderData, ingredients]);
 
-  if (orderLoading || (!orderInfo && (!ingredients || ingredients.length === 0))) {
+  // Show loading only when we're actually loading and don't have order data
+  if (orderLoading && !orderData) {
     return <Preloader />;
   }
 
+  // Show error if there's an error and no order data
+  if (orderError && !orderData) {
+    return <ErrorMessage message={orderError} onRetry={handleRetry} />;
+  }
+
+  // Show loading if we have order data but ingredients are still loading
+  if (orderData && (!ingredients || ingredients.length === 0)) {
+    return <Preloader />;
+  }
+
+  // Show error if we have order data but can't process it due to missing ingredients
+  if (orderData && ingredients && ingredients.length === 0) {
+    return <ErrorMessage message="Ошибка загрузки ингредиентов" />;
+  }
+
   if (!orderInfo) {
-    // Only show error text if we truly have no data
-    return <div className="text text_type_main-default p-6">{orderError ? 'Ошибка загрузки заказа' : 'Заказ не найден'}</div>;
+    return <ErrorMessage message="Заказ не найден" />;
   }
 
   return <OrderInfoUI orderInfo={orderInfo} />;

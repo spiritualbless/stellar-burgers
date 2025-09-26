@@ -87,7 +87,16 @@ export const getIngredientsApi = () =>
 
 export const getFeedsApi = () =>
   fetch(`${URL}/orders/all`)
-    .then((res) => checkResponse<TFeedsResponse>(res))
+    .then((res) => {
+      if (!res.ok) {
+        if (res.status >= 500) {
+          throw new Error('Ошибка сервера');
+        } else {
+          throw new Error('Ошибка загрузки ленты заказов');
+        }
+      }
+      return checkResponse<TFeedsResponse>(res);
+    })
     .then((data) => {
       if (data?.success) return data;
       return Promise.reject(data);
@@ -135,7 +144,18 @@ export const getOrderByNumberApi = (number: number) =>
     headers: {
       'Content-Type': 'application/json'
     }
-  }).then((res) => checkResponse<TOrderResponse>(res));
+  }).then((res) => {
+    if (!res.ok) {
+      if (res.status === 404) {
+        throw new Error('Заказ не найден');
+      } else if (res.status >= 500) {
+        throw new Error('Ошибка сервера');
+      } else {
+        throw new Error('Ошибка загрузки заказа');
+      }
+    }
+    return checkResponse<TOrderResponse>(res);
+  });
 
 export type TRegisterData = {
   email: string;

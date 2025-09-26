@@ -13,7 +13,7 @@ import { NotFound404 } from '@pages';
 import { ProtectedRoute } from '../protected-route';
 import { ModalRoutes } from '../modal-routes';
 import { AppHeader } from '@components';
-import { selectIsAuthenticated } from '../../services/selectors';
+import { selectIsAuthenticated, selectUser } from '../../services/selectors';
 import { getUser } from '../../services/slices/authSlice';
 import { fetchIngredients } from '../../services/slices/ingredientsSlice';
 import '../../index.css';
@@ -24,6 +24,7 @@ const App = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
+  const user = useSelector(selectUser);
 
   const background = location.state?.background;
 
@@ -32,10 +33,12 @@ const App = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    // Only call getUser if we have a token but no user data
+    // This prevents calling getUser after successful login when user data is already available
+    if (isAuthenticated && !user) {
       dispatch(getUser());
     }
-  }, [dispatch, isAuthenticated]);
+  }, [dispatch, isAuthenticated, user]);
 
   return (
     <div className={styles.app}>

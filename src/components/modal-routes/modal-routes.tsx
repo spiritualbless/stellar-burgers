@@ -6,6 +6,7 @@ import { IngredientDetails } from '../ingredient-details';
 import { OrderInfo } from '../order-info';
 import { ProtectedRoute } from '../protected-route';
 import { getOrderByNumber, clearOrder } from '../../services/slices/orderSlice';
+import { selectOrderCache } from '../../services/selectors';
 
 export const ModalRoutes = () => {
   const location = useLocation();
@@ -40,23 +41,39 @@ export const ModalRoutes = () => {
   const OrderModalWithData = () => {
     const { number } = useParams<{ number: string }>();
     const lastRequestedNumberRef = useRef<number | null>(null);
+    const isLoadingRef = useRef<boolean>(false);
+    const orderCache = useSelector(selectOrderCache);
     
     useEffect(() => {
       if (number) {
-        // Avoid duplicate fetching if current order is already the requested one
-        const currentNumber = currentOrder?.number;
         const targetNumber = parseInt(number);
-        const alreadyRequested = lastRequestedNumberRef.current === targetNumber;
-        if (currentNumber !== targetNumber && !alreadyRequested) {
+        const currentNumber = currentOrder?.number;
+        
+        // Check if order is in cache first
+        const cachedOrder = orderCache[targetNumber];
+        
+        // Only fetch if:
+        // 1. We don't have the order data yet (neither current nor cached)
+        // 2. The current order is different from the requested one
+        // 3. We haven't already requested this number
+        // 4. We're not currently loading
+        if (!cachedOrder && 
+            currentNumber !== targetNumber && 
+            lastRequestedNumberRef.current !== targetNumber && 
+            !isLoadingRef.current) {
           lastRequestedNumberRef.current = targetNumber;
-          dispatch(getOrderByNumber(targetNumber));
+          isLoadingRef.current = true;
+          dispatch(getOrderByNumber(targetNumber)).finally(() => {
+            isLoadingRef.current = false;
+          });
         }
       }
+      
       return () => {
-        // Cleanup viewed order on unmount
-        dispatch(clearOrder());
+        // Don't clear order on unmount to avoid flickering
+        // The order will be cleared when modal is closed
       };
-    }, [dispatch, number, currentOrder?.number]);
+    }, [dispatch, number, orderCache]);
 
     return handleOrderModal();
   };

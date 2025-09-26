@@ -61,6 +61,7 @@ export const BurgerConstructor: FC = () => {
       !orderRequest &&
       !autoSubmitGuardRef.current
     ) {
+      console.log('Auto-submitting order after login');
       autoSubmitGuardRef.current = true;
       const ingredientsIds = [
         bun._id,

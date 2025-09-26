@@ -29,6 +29,7 @@ export const selectCurrentOrder = (state: RootState) => state.order.currentOrder
 export const selectOrderNumber = (state: RootState) => state.order.orderNumber;
 export const selectOrderLoading = (state: RootState) => state.order.loading;
 export const selectOrderError = (state: RootState) => state.order.error;
+export const selectOrderCache = (state: RootState) => state.order.orderCache;
 
 // Feed selectors
 export const selectFeedOrders = (state: RootState) => state.feed.orders;

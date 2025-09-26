@@ -141,9 +141,13 @@ export const authSlice = createSlice({
       .addCase(getUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to get user';
-        state.isAuthenticated = false;
-        setCookie('accessToken', '', { expires: -1 });
-        localStorage.removeItem('refreshToken');
+        // Only clear auth state if we don't have user data (token might be invalid)
+        // If we have user data from login, keep the auth state
+        if (!state.user) {
+          state.isAuthenticated = false;
+          setCookie('accessToken', '', { expires: -1 });
+          localStorage.removeItem('refreshToken');
+        }
       })
       // Update User
       .addCase(updateUser.pending, (state) => {

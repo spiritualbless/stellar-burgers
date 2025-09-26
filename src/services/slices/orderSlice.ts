@@ -8,6 +8,7 @@ export interface OrderState {
   orderNumber: number | null;
   loading: boolean;
   error: string | null;
+  orderCache: { [key: number]: TOrder };
 }
 
 const initialState: OrderState = {
@@ -15,6 +16,7 @@ const initialState: OrderState = {
   orderNumber: null,
   loading: false,
   error: null,
+  orderCache: {},
 };
 
 export const createOrder = createAsyncThunk(
@@ -29,7 +31,14 @@ export const createOrder = createAsyncThunk(
 
 export const getOrderByNumber = createAsyncThunk(
   'order/getOrderByNumber',
-  async (number: number) => {
+  async (number: number, { getState }) => {
+    const state = getState() as { order: OrderState };
+    
+    // Check if order is already in cache
+    if (state.order.orderCache[number]) {
+      return { orders: [state.order.orderCache[number]] };
+    }
+    
     const data = await getOrderByNumberApi(number);
     return data;
   }
@@ -43,6 +52,9 @@ export const orderSlice = createSlice({
       state.currentOrder = null;
       state.orderNumber = null;
       state.error = null;
+    },
+    clearOrderCache: (state) => {
+      state.orderCache = {};
     },
   },
   extraReducers: (builder) => {
@@ -67,15 +79,24 @@ export const orderSlice = createSlice({
       })
       .addCase(getOrderByNumber.fulfilled, (state, action) => {
         state.loading = false;
-        state.currentOrder = action.payload.orders[0];
+        state.error = null;
+        if (action.payload.orders && action.payload.orders.length > 0) {
+          const order = action.payload.orders[0];
+          state.currentOrder = order;
+          // Cache the order
+          state.orderCache[order.number] = order;
+        } else {
+          state.error = 'Заказ не найден';
+        }
       })
       .addCase(getOrderByNumber.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to get order';
+        state.error = action.error.message || 'Ошибка загрузки заказа';
+        state.currentOrder = null;
       });
   },
 });
 
-export const { clearOrder } = orderSlice.actions;
+export const { clearOrder, clearOrderCache } = orderSlice.actions;
 
 export default orderSlice.reducer;
