@@ -15,6 +15,7 @@ import { ModalRoutes } from '../modal-routes';
 import { AppHeader } from '@components';
 import { selectIsAuthenticated, selectUser } from '../../services/selectors';
 import { getUser } from '../../services/slices/authSlice';
+import { getCookie } from '../../utils/cookie';
 import { fetchIngredients } from '../../services/slices/ingredientsSlice';
 import '../../index.css';
 import styles from './app.module.css';
@@ -33,12 +34,12 @@ const App = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    // Only call getUser if we have a token but no user data
-    // This prevents calling getUser after successful login when user data is already available
-    if (isAuthenticated && !user) {
+    // Fetch user if we have an access token and missing user data
+    const hasToken = Boolean(getCookie('accessToken'));
+    if (hasToken && !user) {
       dispatch(getUser());
     }
-  }, [dispatch, isAuthenticated, user]);
+  }, [dispatch, user]);
 
   return (
     <div className={styles.app}>
